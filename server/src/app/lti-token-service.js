@@ -3,7 +3,7 @@ import qs from 'qs';
 import { oauth2JWT } from './lti-adv';
 import { getAppById, getAuthFromState, insertNewAuthToken } from '../database/db-utility';
 
-export const getLTIToken = async (clientId, tokenUrl, scope, nonce) => {
+export const getLTIToken = async (clientId, tokenUrl, scope, nonce, deploymentId) => {
   const clientAssertion = oauth2JWT(clientId, tokenUrl);
 
   const options = {
@@ -22,9 +22,22 @@ export const getLTIToken = async (clientId, tokenUrl, scope, nonce) => {
     scope: scope
   };
 
+  if (deploymentId) {
+    body.deployment_id = deploymentId;
+  }
+
+  console.log(`getLTIToken - url: ${tokenUrl}, scope: ${scope}, deploymentId: ${deploymentId || 'none'}`);
+
   try {
     const response = await axios.post(tokenUrl, qs.stringify(body), options);
     const token = response.data.access_token;
+    const tokenParts = token.split('.');
+    if (tokenParts.length === 3) {
+      const tokenBody = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
+      console.log(`getLTIToken - token claims: ${JSON.stringify(tokenBody, null, 2)}`);
+    } else {
+      console.log(`getLTIToken - token (not a JWT, raw): ${token}`);
+    }
 
     // Cache the LTI token
     await cacheToken(token, nonce);
@@ -35,12 +48,12 @@ export const getLTIToken = async (clientId, tokenUrl, scope, nonce) => {
   }
 };
 
-export const getCachedLTIToken = async (nonce, clientId, scope) => {
+export const getCachedLTIToken = async (nonce, clientId, scope, deploymentId) => {
   let token = await getAuthFromState(`${nonce}`).lti_token;
   if (!token) {
     console.log(`Couldn't get cached token for nonce ${nonce}.`);
     const tokenUrl = getAppById(clientId).setup.jwtUrl;
-    token = await getLTIToken(clientId, tokenUrl, scope, nonce);
+    token = await getLTIToken(clientId, tokenUrl, scope, nonce, deploymentId);
     await insertNewAuthToken(nonce, token, 'lti_token');
   }
 

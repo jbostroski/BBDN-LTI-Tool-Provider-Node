@@ -14,6 +14,7 @@ import GroupSetsView from "./groupSetsView";
 import GroupsView from "./groupsView";
 import IconButton from "@material-ui/core/IconButton/index";
 import LaunchEndpoint from "./home";
+import LinkContentView from "./linkContentView";
 import List from "@material-ui/core/List/index";
 import LtiAdvView from "./ltiAdvView";
 import LtiBobcatView from "./ltiBobcatView";
@@ -143,6 +144,10 @@ class Dashboard extends React.Component {
               <Route
                 path="/assign_grades_view"
                 component={AssignGradesView}
+              />
+              <Route
+                path="/link_content_view"
+                component={LinkContentView}
               />
             </main>
             <SnackBar/>

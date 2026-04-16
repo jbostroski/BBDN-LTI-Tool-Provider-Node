@@ -1,5 +1,6 @@
 import config from '../config/config';
 import assignGrades, { addCol, delCol, readCols, results, scores } from './assign-grades';
+import linkContent, { getContentItems, createContentItem, updateContentItem } from './link-content';
 import axios from 'axios';
 import cookieParser from 'cookie-parser';
 import eventstore from './eventstore';
@@ -14,7 +15,7 @@ import { got_launch } from './content-item';
 import { got_launch as lti_got_launch } from './lti';
 import { namesRoles } from './names-roles';
 import { oidcLogin, verifyToken } from './lti-adv';
-import { AGPayload, ContentItem, GroupsPayload, NRPayload } from '../common/restTypes';
+import { AGPayload, ContentItem, GroupsPayload, LCSPayload, NRPayload } from '../common/restTypes';
 import { buildProctoringEndReturnPayload, buildProctoringStartReturnPayload } from './proctoring';
 import { handleSubmissionNotice } from './processor';
 import { deepLinkContent } from './deep-linking';
@@ -508,6 +509,39 @@ module.exports = function (app) {
 
   app.get('/agPayloadData', (req, res) => {
     res.send(agPayload);
+  });
+
+  //=======================================================
+  // Link and Content Service
+  let lcsPayload;
+
+  app.post('/linkContent', (req, res) => {
+    console.log('--------------------\nlinkContent');
+    lcsPayload = new LCSPayload();
+    linkContent(req, res, lcsPayload);
+    res.redirect('/link_content_view');
+  });
+
+  app.post('/lcsGetItems', (req, res) => {
+    console.log('--------------------\nlcsGetItems');
+    lcsPayload.url = req.body.url;
+    getContentItems(req, res, lcsPayload);
+  });
+
+  app.post('/lcsCreateItem', (req, res) => {
+    console.log('--------------------\nlcsCreateItem');
+    lcsPayload.form = req.body;
+    createContentItem(req, res, lcsPayload);
+  });
+
+  app.post('/lcsUpdateItem', (req, res) => {
+    console.log('--------------------\nlcsUpdateItem');
+    lcsPayload.form = req.body;
+    updateContentItem(req, res, lcsPayload);
+  });
+
+  app.get('/lcsPayloadData', (req, res) => {
+    res.send(lcsPayload);
   });
 
   app.get('/config', (req, res) => {

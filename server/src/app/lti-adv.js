@@ -100,6 +100,14 @@ export const verifyToken = async (id_token) => {
 
   if (
     jwtPayload.body[
+      'https://purl.imsglobal.org/spec/lti/claim/linkcontentservice'
+    ] !== undefined
+  ) {
+    jwtPayload.link_content = true;
+  }
+
+  if (
+    jwtPayload.body[
       'https://purl.imsglobal.org/spec/lti/claim/target_link_uri'
     ] !== undefined
   ) {
