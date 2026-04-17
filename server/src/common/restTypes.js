@@ -60,3 +60,18 @@ export class AGPayload {
     this.lineitem = [];
   }
 }
+
+export class LCSPayload {
+  constructor() {
+    this.orig_body = null;
+    this.claim = null;
+    this.scopeRead = false;
+    this.scopeUpdate = false;
+    this.scopeCreate = false;
+    this.scopeDelete = false;
+    this.contentItems = '';
+    this.contentItem = '';
+    this.types = [];
+    this.body = null;
+  }
+}

@@ -28,6 +28,7 @@ export default class LtiAdvView extends React.Component {
           namesRoles: jwtPayload.names_roles,
           grading: jwtPayload.grading,
           groups: jwtPayload.groups,
+          linkContent: jwtPayload.link_content,
         });
       });
   }
@@ -93,6 +94,16 @@ export default class LtiAdvView extends React.Component {
     ) : (
       <Typography variant='body1' style={styles.notAvailable}>
         <b>Group Sets not available</b>
+      </Typography>
+    );
+    const linkContentService = this.state.linkContent ? (
+      <form action='/linkContent' method='POST'>
+        <Button variant='contained' type='submit' color='secondary'>Link and Content Service</Button>
+        <input type='hidden' name='body' value={body}/>
+      </form>
+    ) : (
+      <Typography variant='body1' style={styles.notAvailable}>
+        <b>Link and Content Service not available</b>
       </Typography>
     );
     const checkMicrophone = () => {
@@ -175,6 +186,9 @@ export default class LtiAdvView extends React.Component {
             </Grid>
             <Grid item xs>
               {groupSets}
+            </Grid>
+            <Grid item xs>
+              {linkContentService}
             </Grid>
           </Grid>
 
