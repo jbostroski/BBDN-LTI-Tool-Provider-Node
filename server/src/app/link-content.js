@@ -17,7 +17,11 @@ const safeJsonParse = (str, fallback) => {
 
 // Get a fresh LCS token with the given scope and deployment_id
 const getLCSToken = async (req, lcsPayload, scope) => {
-  let client_id = JSON.parse(req.body.body).aud;
+  const parsed = safeJsonParse(req.body.body, null);
+  if (!parsed || !parsed.aud) {
+    throw new Error('Missing or invalid request body');
+  }
+  let client_id = parsed.aud;
   if (client_id instanceof Array) {
     client_id = client_id[0];
   }
@@ -26,7 +30,11 @@ const getLCSToken = async (req, lcsPayload, scope) => {
 };
 
 export default function linkContent(req, res, lcsPayload) {
-  let json = JSON.parse(req.body.body);
+  let json = safeJsonParse(req.body.body, null);
+  if (!json) {
+    lcsPayload.body = { error: 'Invalid or missing launch body' };
+    return;
+  }
   lcsPayload.orig_body = json;
   lcsPayload.claim =
     json['https://purl.imsglobal.org/spec/lti/claim/linkcontentservice'];
@@ -74,6 +82,7 @@ export const getContentItems = (req, res, lcsPayload) => {
 
         if (err) {
           console.log('LCS Get Content Items Error - request failed: ' + err.message);
+          lcsPayload.body = { error: err.message };
         } else if (response.statusCode !== 200) {
           lcsPayload.body = json;
         } else {
@@ -132,6 +141,7 @@ export const createContentItem = (req, res, lcsPayload) => {
 
         if (err) {
           console.log('LCS Create Content Item Error - request failed: ' + err.message);
+          lcsPayload.body = { error: err.message };
         } else if (response.statusCode !== 200 && response.statusCode !== 201) {
           lcsPayload.body = json;
         } else {
@@ -219,6 +229,7 @@ export const updateContentItem = (req, res, lcsPayload) => {
 
           if (putErr) {
             console.log('LCS Update Content Item Error - request failed: ' + putErr.message);
+            lcsPayload.body = { error: putErr.message };
           } else if (putResponse.statusCode !== 200) {
             lcsPayload.body = json;
           } else {

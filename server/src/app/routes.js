@@ -524,18 +524,27 @@ module.exports = function (app) {
 
   app.post('/lcsGetItems', (req, res) => {
     console.log('--------------------\nlcsGetItems');
+    if (!lcsPayload) {
+      return res.status(400).send('LCS session not initialized. Please launch from LTI first.');
+    }
     lcsPayload.url = req.body.url;
     getContentItems(req, res, lcsPayload);
   });
 
   app.post('/lcsCreateItem', (req, res) => {
     console.log('--------------------\nlcsCreateItem');
+    if (!lcsPayload) {
+      return res.status(400).send('LCS session not initialized. Please launch from LTI first.');
+    }
     lcsPayload.form = req.body;
     createContentItem(req, res, lcsPayload);
   });
 
   app.post('/lcsUpdateItem', (req, res) => {
     console.log('--------------------\nlcsUpdateItem');
+    if (!lcsPayload) {
+      return res.status(400).send('LCS session not initialized. Please launch from LTI first.');
+    }
     lcsPayload.form = req.body;
     updateContentItem(req, res, lcsPayload);
   });

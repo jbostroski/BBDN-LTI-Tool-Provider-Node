@@ -63,8 +63,8 @@ export class AGPayload {
 
 export class LCSPayload {
   constructor() {
-    this.orig_body = Object;
-    this.claim = Object;
+    this.orig_body = null;
+    this.claim = null;
     this.scopeRead = false;
     this.scopeUpdate = false;
     this.scopeCreate = false;
@@ -72,6 +72,6 @@ export class LCSPayload {
     this.contentItems = '';
     this.contentItem = '';
     this.types = [];
-    this.body = Object;
+    this.body = null;
   }
 }
