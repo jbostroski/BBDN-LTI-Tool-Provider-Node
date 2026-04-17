@@ -146,7 +146,7 @@ class LinkContentView extends React.Component {
                     label={'Custom (key=val per line)'}
                     size={'small'}
                     multiline
-                    minRows={2}/>
+                    rowsMin={2}/>
                 </td>
               </tr>
             </tbody>
