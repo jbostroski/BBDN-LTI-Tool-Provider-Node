@@ -31,6 +31,10 @@ class LinkContentView extends React.Component {
   }
 
   render() {
+    if (!this.state.origBody) {
+      return <Typography variant='h4'>Loading...</Typography>;
+    }
+
     const body = JSON.stringify(this.state.origBody);
 
     const getItems =

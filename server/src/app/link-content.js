@@ -7,6 +7,14 @@ const updateScope = 'https://purl.imsglobal.org/spec/lti/scope/contentitem.updat
 const createScope = 'https://purl.imsglobal.org/spec/lti/scope/contentitem.create';
 const deleteScope = 'https://purl.imsglobal.org/spec/lti/scope/contentitem.delete';
 
+const safeJsonParse = (str, fallback) => {
+  try {
+    return JSON.parse(str);
+  } catch (e) {
+    return fallback || { error: 'Unexpected response', raw: String(str).substring(0, 200) };
+  }
+};
+
 // Get a fresh LCS token with the given scope and deployment_id
 const getLCSToken = async (req, lcsPayload, scope) => {
   let client_id = JSON.parse(req.body.body).aud;
@@ -62,7 +70,7 @@ export const getContentItems = (req, res, lcsPayload) => {
       };
 
       request(options, function (err, response, body) {
-        let json = JSON.parse(body);
+        let json = safeJsonParse(body);
 
         if (err) {
           console.log('LCS Get Content Items Error - request failed: ' + err.message);
@@ -75,23 +83,16 @@ export const getContentItems = (req, res, lcsPayload) => {
       });
     },
     function (error) {
-      console.log(error);
+      console.log('LCS Get Content Items - token error: ' + error);
+      lcsPayload.body = { error: error && error.message ? error.message : 'Failed to get LCS token' };
+      res.redirect('/link_content_view');
     }
   );
 };
 
 export const createContentItem = (req, res, lcsPayload) => {
-  const lcsPayload_orig = JSON.parse(req.body.body);
-  let client_id = lcsPayload_orig.aud;
-  if (client_id instanceof Array) {
-    client_id = client_id[0];
-  }
-  const deployment_id = lcsPayload_orig['https://purl.imsglobal.org/spec/lti/claim/deployment_id'];
-  console.log(`LCS Create - client_id: ${client_id}, deployment_id: ${deployment_id}`);
-  console.log(`LCS Create - contentItems URL: ${lcsPayload.contentItems}`);
   getLCSToken(req, lcsPayload, createScope).then(
     function (token) {
-      console.log(`LCS Create - token (first 20): ${token ? token.substring(0, 20) : 'NONE'}...`);
       let newItem = {
         type: 'ltiResourceLink',
         title: lcsPayload.form.title,
@@ -126,12 +127,8 @@ export const createContentItem = (req, res, lcsPayload) => {
         body: JSON.stringify(newItem)
       };
 
-      console.log(`LCS Create - POST body: ${options.body}`);
-
       request(options, function (err, response, body) {
-        let json = body ? JSON.parse(body) : {};
-
-        console.log(`LCS Create - response status: ${response ? response.statusCode : 'N/A'}, body: ${body}`);
+        let json = body ? safeJsonParse(body) : {};
 
         if (err) {
           console.log('LCS Create Content Item Error - request failed: ' + err.message);
@@ -144,15 +141,14 @@ export const createContentItem = (req, res, lcsPayload) => {
       });
     },
     function (error) {
-      console.log('LCS Create - token error: ' + error);
+      console.log('LCS Create Content Item - token error: ' + error);
+      lcsPayload.body = { error: error && error.message ? error.message : 'Failed to get LCS token' };
+      res.redirect('/link_content_view');
     }
   );
 };
 
 export const updateContentItem = (req, res, lcsPayload) => {
-  const lcsPayload_orig = JSON.parse(req.body.body);
-  const deployment_id = lcsPayload_orig['https://purl.imsglobal.org/spec/lti/claim/deployment_id'];
-  console.log(`LCS Update - deployment_id: ${deployment_id}`);
   getLCSToken(req, lcsPayload, readScope + ' ' + updateScope).then(
     function (token) {
       let itemUrl = lcsPayload.form.itemUrl;
@@ -169,13 +165,13 @@ export const updateContentItem = (req, res, lcsPayload) => {
 
       request(getOptions, function (err, response, body) {
         if (err || response.statusCode !== 200) {
-          let json = body ? JSON.parse(body) : { error: 'Failed to GET item for update' };
+          let json = body ? safeJsonParse(body, { error: 'Failed to GET item for update' }) : { error: 'Failed to GET item for update' };
           lcsPayload.body = json;
           res.redirect('/link_content_view');
           return;
         }
 
-        let existingItem = JSON.parse(body);
+        let existingItem = safeJsonParse(body);
 
         // Apply updates on top of existing item (PUT is full replace)
         let updatedItem = Object.assign({}, existingItem);
@@ -219,7 +215,7 @@ export const updateContentItem = (req, res, lcsPayload) => {
         };
 
         request(putOptions, function (putErr, putResponse, putBody) {
-          let json = putBody ? JSON.parse(putBody) : {};
+          let json = putBody ? safeJsonParse(putBody) : {};
 
           if (putErr) {
             console.log('LCS Update Content Item Error - request failed: ' + putErr.message);
@@ -233,7 +229,9 @@ export const updateContentItem = (req, res, lcsPayload) => {
       });
     },
     function (error) {
-      console.log(error);
+      console.log('LCS Update Content Item - token error: ' + error);
+      lcsPayload.body = { error: error && error.message ? error.message : 'Failed to get LCS token' };
+      res.redirect('/link_content_view');
     }
   );
 };

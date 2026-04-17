@@ -26,18 +26,9 @@ export const getLTIToken = async (clientId, tokenUrl, scope, nonce, deploymentId
     body.deployment_id = deploymentId;
   }
 
-  console.log(`getLTIToken - url: ${tokenUrl}, scope: ${scope}, deploymentId: ${deploymentId || 'none'}`);
-
   try {
     const response = await axios.post(tokenUrl, qs.stringify(body), options);
     const token = response.data.access_token;
-    const tokenParts = token.split('.');
-    if (tokenParts.length === 3) {
-      const tokenBody = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
-      console.log(`getLTIToken - token claims: ${JSON.stringify(tokenBody, null, 2)}`);
-    } else {
-      console.log(`getLTIToken - token (not a JWT, raw): ${token}`);
-    }
 
     // Cache the LTI token
     await cacheToken(token, nonce);
