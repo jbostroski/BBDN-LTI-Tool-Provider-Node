@@ -5,7 +5,6 @@
 .nvmrc
 .DS_Store
 /npm-debug.log
-/server/config/config_override*.json
 /node_modules
 bower_components
 **/public/dist
