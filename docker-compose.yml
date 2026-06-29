@@ -1,17 +1,19 @@
-lti-tool:
-  build: .
-  image: lti-tool
-  ports:
-    - "3000:3000"
-  volumes:
-    - data
+version: '3.8'
+
+services:
+  lti-tool:
+    build: .
+    image: lti-tool
+    ports:
+      - "3000:3000"
+    volumes:
+      - data:/data
 # Entry for /etc/hosts in container so the tool can make calls
 # out to the Learn instance. This is for developers when working
 # on one machine. The IP address will need to be changed to the
 # one currently assigned to the development machine.
-#  environment:
-  extra_hosts:
-    - "mylearn.int.bbpd.io:10.103.124.51"
+#    extra_hosts:
+#      - "mylearn.int.bbpd.io:10.103.124.51"
 
 volumes:
   data:
